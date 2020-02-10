@@ -26,6 +26,27 @@ def calc_c(ratings):
     return 2300 / ratings[:15].dot(2.**np.arange(0, -15, -1))
 
 
+def calc_q(rating_release, players_release):
+    """
+    Коэффициент Q вычисляется при релизе как среднее значение отношения рейтинга R к техническому
+    рейтингу по базовому составу RB для команд, входящих в 100 лучших по последнему релизу
+    (исключая те, которые получают в этом релизе стартовые рейтинги) и имеющих не менее шести
+    игроков в базовом составе.
+    """
+
+    def calc_rb_raw(players_ratings):
+        pr_sorted = players_ratings.sort_values(ascending=False)
+        coeffs = np.zeros(pr_sorted.size)
+        coeffs[:6] = (np.arange(6, 0, -1) / 6)[:coeffs.size]
+        return np.round(pr_sorted.dot(coeffs))
+
+    top_h = rating_release.iloc[:100].set_index('Ид')
+    top_h_ids = set(top_h.index)
+    rb_raws = players_release[players_release['ИД базовой команды'].isin(top_h_ids)].groupby('ИД базовой команды')['Рейтинг'].apply(calc_rb_raw)
+    top_h = top_h.join(rb_raws, rsuffix='_raw')
+    return (top_h['Рейтинг'] / top_h['Рейтинг_raw']).mean()
+
+
 def calc_score_real(predicted_scores, positions):
     positions = positions - 1
     pos_counts = pd.Series(positions).value_counts().reset_index()
