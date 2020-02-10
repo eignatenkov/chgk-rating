@@ -1,15 +1,19 @@
 import numpy as np
 from collections import Counter
 
-from release_procs.tools import calculate_bonus_predictions
+from release_procs.tools import calculate_bonus_predictions, heredity
 
 
-def calc_rg(tournament_results, team_release, player_release):
-    """
-    mock function for now
-    returns np.array of rgs
-    """
-    return np.array([int(t['tech_rating_rg']) for t in tournament_results])
+def calc_rg(team_tournament_info, teams_release, q):
+    h = heredity(team_tournament_info)
+    r = teams_release['Рейтинг'].get(team_tournament_info['team']['id'], 0) if h else 0
+    rb = teams_release['ТРК по БС'].get(team_tournament_info['team']['id'], 0) if h else 0
+    player_ratings = np.array([p['rating'] for p in team_tournament_info['teamMembers']])
+    rt = player_ratings.sum() * q
+    if r:
+        return r * rt / rb
+    else:
+        return rt
 
 
 def calc_bonus(tournament_df, coeff=0.5):
@@ -25,11 +29,11 @@ def calc_bonus(tournament_df, coeff=0.5):
     return d.astype('int')
 
 
-def calculate_changes(team_release, player_release, tournament_results):
+def calculate_changes(tournament_results, teams_release, q):
     """
     returns Counter({team_id: change}) based on the tournament results
     """
-    rgs = calc_rg(tournament_results, team_release, player_release)
+    rgs = np.array([calc_rg(team, teams_release, q) for team in tournament_results])
     bonus_predictions = calculate_bonus_predictions(rgs)
 
     return Counter()
