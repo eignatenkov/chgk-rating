@@ -8,7 +8,7 @@ def get_players_release(release_id):
     """
     players_pd = pd.read_csv(f"https://rating.chgk.info/players.php"
                              f"?release={release_id}&download_data=export_release")
-    return players_pd.set_index(' ИД')
+    return players_pd
 
 
 def get_teams_release(release_id):
