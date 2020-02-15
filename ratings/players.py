@@ -9,6 +9,7 @@ class PlayerRating:
             raw_rating = get_players_release(release_id)
             raw_rating = raw_rating[[' ИД', 'ИД базовой команды', 'Рейтинг']]
             raw_rating.columns = ['player_id', 'base_team_id', 'rating']
+            raw_rating.drop_duplicates(subset='player_id', inplace=True)
             self.data = raw_rating.set_index('player_id')
         elif file_path:
             self.data = pd.DataFrame.from_csv(file_path, index_col=0)

@@ -21,39 +21,14 @@ def calculate_bonus_predictions(tournament_ratings, c=1):
     return raw_preds
 
 
-def calc_c(ratings):
-    ratings[::-1].sort()
-    return 2300 / ratings[:15].dot(2.**np.arange(0, -15, -1))
-
-
-def calc_rb_raw(players_ratings):
+def calc_tech_rating(players_ratings, q=None):
     players_ratings[::-1].sort()
     coeffs = np.zeros(players_ratings.size)
     coeffs[:6] = (np.arange(6,0, -1) / 6)[:coeffs.size]
-    return np.round(players_ratings.dot(coeffs))
-
-
-def calc_q(rating_release, players_release):
-    """
-    Коэффициент Q вычисляется при релизе как среднее значение отношения рейтинга R к техническому
-    рейтингу по базовому составу RB для команд, входящих в 100 лучших по последнему релизу
-    (исключая те, которые получают в этом релизе стартовые рейтинги) и имеющих не менее шести
-    игроков в базовом составе.
-    """
-    top_h = rating_release.iloc[:100]
-    top_h_ids = set(top_h.index)
-    rb_raws = players_release[players_release['ИД базовой команды'].isin(top_h_ids)].groupby(
-        'ИД базовой команды')['Рейтинг'].apply(lambda x: calc_rb_raw(x.values))
-    top_h = top_h.join(rb_raws, rsuffix='_raw')
-    return (top_h['Рейтинг'] / top_h['Рейтинг_raw']).mean()
-
-
-def heredity(team_tournament_info):
-    n_base = sum(player['flag'] in {'Б', 'К'} for player in team_tournament_info['teamMembers'])
-    return n_base > 3 or n_base == 3 and team_tournament_info['team']['name'] == team_tournament_info['current']['name']
-
-
-
+    tech_rating = np.round(players_ratings.dot(coeffs))
+    if q is not None:
+        tech_rating *= q
+    return tech_rating
 
 
 def calc_score_real(predicted_scores, positions):
