@@ -24,9 +24,10 @@ def get_all_tournaments():
     return all_tournaments
 
 
-def get_tournament_results(tournament_id, recaps=False, rating=False):
+def get_tournament_results(tournament_id, recaps=False, rating=False, mask=False):
     url = f"http://api.rating.chgk.net/tournaments/{tournament_id}/results.json" \
-          f"?includeTeamMembers={int(recaps)}&includeRatingB={int(rating)}"
+          f"?includeTeamMembers={int(recaps)}&includeRatingB={int(rating)}&" \
+          f"includeMasksAndControversials={int(mask)}"
     return api_call(url)
 
 
