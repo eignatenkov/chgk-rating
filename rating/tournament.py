@@ -1,5 +1,5 @@
 from rating_api.tournaments import get_tournament_results
-from rating.tools import calc_tech_rating, rolling_window, calc_score_real, calc_bonus
+from rating.tools import calc_tech_rating, rolling_window, calc_score_real, calc_bonus_raw
 import pandas as pd
 import numpy as np
 
@@ -54,4 +54,8 @@ class Tournament:
         self.data.sort_values(by='rg', ascending=False, inplace=True)
         self.data['score_pred'] = self.calculate_bonus_predictions(self.data.rg.values, c=team_rating.c)
         self.data['score_real'] = calc_score_real(self.data.score_pred.values, self.data.position.values)
-        self.data['bonus'] = calc_bonus(self.data.score_real, self.data.score_pred, self.data.n_legs)
+        self.data['bonus_raw'] = calc_bonus_raw(self.data.score_real, self.data.score_pred)
+        self.data['bonus'] = self.data.bonus_raw
+        self.data.loc[self.data.heredity & (self.data.n_legs > 2), 'bonus'] *= \
+            (2 / self.data[self.data.heredity & (self.data.n_legs > 2)]['n_legs'])
+        self.data.sort_values(by=['position', 'name'], inplace=True)

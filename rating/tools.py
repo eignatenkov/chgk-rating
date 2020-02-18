@@ -28,14 +28,12 @@ def calc_score_real(predicted_scores, positions):
     return np.round(pos_counts.set_index('pos').loc[positions, 'bonus'].values)
 
 
-def calc_bonus(score_real, score_pred, n_legs, coeff=0.5):
+def calc_bonus_raw(score_real, score_pred, coeff=0.5):
     """
-    tournament_df should have columns: score_real, score_pred, n_leg
-    6 ms for bb, kinda long
+    Если D>0, а число игроков, не входящих в базовый состав N>2, то D умножается на 2/N;
     """
     d_one = score_real - score_pred
     d_one[d_one < 0] *= 0.5
     d_two = 300 * np.exp((score_real - 2300) / 350)
     d = coeff * (d_one + d_two)
-    d[(d > 0) & (n_legs > 2)] *= n_legs[(d > 0) & (n_legs > 2)]
     return d.astype('int')
