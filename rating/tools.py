@@ -30,7 +30,12 @@ def calc_score_real(predicted_scores, positions):
 
 def calc_bonus_raw(score_real, score_pred, coeff=0.5):
     """
-    Если D>0, а число игроков, не входящих в базовый состав N>2, то D умножается на 2/N;
+    расчет бонусов исходя из реальных и предсказанных турнирных баллов,
+    без учета поправки на легионеров
+    :param score_real:
+    :param score_pred:
+    :param coeff: коэффициент учета (0.5 для синхронов, 1 для очников)
+    :return:
     """
     d_one = score_real - score_pred
     d_one[d_one < 0] *= 0.5
