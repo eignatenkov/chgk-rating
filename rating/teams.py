@@ -1,5 +1,5 @@
 from rating_api.release import get_teams_release
-from release_procs.tools import calc_tech_rating
+from rating.tools import calc_tech_rating
 import pandas as pd
 import numpy as np
 

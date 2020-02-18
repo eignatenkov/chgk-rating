@@ -9,18 +9,6 @@ def rolling_window(a, window):
     return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
 
 
-def calculate_bonus_predictions(tournament_ratings, c=1):
-    """
-    produces array of bonuses based on the array of ratings of participants
-    """
-    tournament_ratings[::-1].sort()
-    raw_preds = np.round(rolling_window(tournament_ratings, 15).dot(2.**np.arange(0, -15, -1)) * c)
-    samesies = tournament_ratings[:-1] == tournament_ratings[1:]
-    for ind in np.nonzero(samesies)[0]:
-        raw_preds[ind + 1] = raw_preds[ind]
-    return raw_preds
-
-
 def calc_tech_rating(players_ratings, q=None):
     players_ratings[::-1].sort()
     coeffs = np.zeros(players_ratings.size)
@@ -40,4 +28,14 @@ def calc_score_real(predicted_scores, positions):
     return np.round(pos_counts.set_index('pos').loc[positions, 'bonus'].values)
 
 
-
+def calc_bonus(score_real, score_pred, n_legs, coeff=0.5):
+    """
+    tournament_df should have columns: score_real, score_pred, n_leg
+    6 ms for bb, kinda long
+    """
+    d_one = score_real - score_pred
+    d_one[d_one < 0] *= 0.5
+    d_two = 300 * np.exp((score_real - 2300) / 350)
+    d = coeff * (d_one + d_two)
+    d[(d > 0) & (n_legs > 2)] *= n_legs[(d > 0) & (n_legs > 2)]
+    return d.astype('int')
