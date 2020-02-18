@@ -12,7 +12,7 @@ def rolling_window(a, window):
 def calc_tech_rating(players_ratings, q=None):
     players_ratings[::-1].sort()
     coeffs = np.zeros(players_ratings.size)
-    coeffs[:6] = (np.arange(6,0, -1) / 6)[:coeffs.size]
+    coeffs[:6] = (np.arange(6, 0, -1) / 6)[:coeffs.size]
     tech_rating = np.round(players_ratings.dot(coeffs))
     if q is not None:
         tech_rating *= q
@@ -24,7 +24,9 @@ def calc_score_real(predicted_scores, positions):
     pos_counts = pd.Series(positions).value_counts().reset_index()
     pos_counts.columns = ['pos', 'n_teams']
     pos_counts['bonus'] = pos_counts.apply(
-        lambda x: np.mean(predicted_scores[int(x.pos - (x.n_teams - 1) / 2) : int(x.pos + (x.n_teams - 1) / 2) + 1]), axis=1)
+        lambda x: np.mean(predicted_scores[
+                          int(x.pos - (x.n_teams - 1) / 2): int(x.pos + (x.n_teams - 1) / 2) + 1]),
+        axis=1)
     return np.round(pos_counts.set_index('pos').loc[positions, 'bonus'].values)
 
 
